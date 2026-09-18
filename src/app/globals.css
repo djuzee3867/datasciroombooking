@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* =========================================================
+   Design tokens — ธีมขาว–ม่วง (plan001.md §8.1, §12)
+   ========================================================= */
+@theme {
+  --color-brand-50: #f6f4ff;
+  --color-brand-100: #ece7ff;
+  --color-brand-200: #dbd2ff;
+  --color-brand-300: #c1b0ff;
+  --color-brand-400: #a184fb;
+  --color-brand-500: #8459f2;
+  --color-brand-600: #7038e0;
+  --color-brand-700: #5f2bc4;
+  --color-brand-800: #4f259f;
+  --color-brand-900: #422180;
+  --color-brand-950: #290f57;
+
+  --color-ink-900: #1b1626;
+  --color-ink-700: #453c58;
+  --color-ink-500: #6d6383;
+  --color-ink-400: #8d84a3;
+  --color-ink-200: #ded9ea;
+  --color-ink-100: #efecf6;
+  --color-ink-50: #f8f7fc;
+
+  --font-sans: var(--font-thai), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl2: 1.125rem;
+}
+
+:root {
+  color-scheme: light;
+  --page: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--page);
+  color: var(--color-ink-900);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "tnum" 0;
+  /* ข้อความไทยยาว ๆ ไม่มีช่องว่างจะดัน min-content ของ grid/flex item จนหน้าเลื่อนแนวนอน
+     ซึ่งขัดกับ §11.2 — บังคับให้ตัดคำได้ทุกที่เป็นค่าเริ่มต้นทั้งระบบ */
+  overflow-wrap: break-word;
+}
+
+/* เส้นเลื่อนแบบบาง สำหรับตารางเวลาที่ต้องเลื่อนแนวนอนบนมือถือ */
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-200) transparent;
+}
+.thin-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-ink-200);
+  border-radius: 999px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* โฟกัสที่มองเห็นชัดสำหรับการใช้คีย์บอร์ด (WCAG 2.1 AA — §11.2) */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* =========================================================
+   ลวดลายประกอบสีในตารางรวมของแอดมิน
+   §10 กำหนดว่าห้ามสื่อความหมายด้วยสีอย่างเดียว
+   ========================================================= */
+.pattern-solid { background-image: none; }
+.pattern-diagonal {
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.2) 0 3px, transparent 3px 9px);
+}
+.pattern-dots {
+  background-image: radial-gradient(rgba(255,255,255,.32) 1.2px, transparent 1.3px);
+  background-size: 8px 8px;
+}
+.pattern-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.22) 1px, transparent 1px);
+  background-size: 9px 9px;
+}
+.pattern-cross {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.18) 0 2px, transparent 2px 8px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.18) 0 2px, transparent 2px 8px);
+}
+.pattern-hatch {
+  background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.28) 0 4px, transparent 4px 9px);
+}
+
+/* คำอธิบายสี (legend) ต้องเห็นลวดลายชัดกว่าบล็อกจริง */
+.legend-swatch.pattern-diagonal {
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.55) 0 2px, transparent 2px 6px);
+}
+.legend-swatch.pattern-dots {
+  background-image: radial-gradient(rgba(255,255,255,.7) 1.1px, transparent 1.2px);
+  background-size: 5px 5px;
+}
+.legend-swatch.pattern-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px);
+  background-size: 6px 6px;
+}
+.legend-swatch.pattern-cross {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.5) 0 1.5px, transparent 1.5px 5px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.5) 0 1.5px, transparent 1.5px 5px);
+}
+.legend-swatch.pattern-hatch {
+  background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.6) 0 3px, transparent 3px 6px);
+}
+
+/* พื้นหลังจำลองรูปห้อง (prototype ยังไม่มีรูปจริง) */
+.room-photo-a { background-image: linear-gradient(140deg, #ddd6fe 0%, #a78bfa 45%, #6d28d9 100%); }
+.room-photo-b { background-image: linear-gradient(140deg, #e0e7ff 0%, #818cf8 45%, #4338ca 100%); }
+.room-photo-c { background-image: linear-gradient(140deg, #fae8ff 0%, #c084fc 45%, #7e22ce 100%); }
+
+.room-photo-overlay {
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.16) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.06) 0 1px, transparent 1px 34px);
+}
+
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-rise { animation: fade-rise .28s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-rise { animation: none; }
+}
