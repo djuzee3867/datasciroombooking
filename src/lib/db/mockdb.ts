@@ -121,16 +121,9 @@ export function assertRole(actor: Actor, ...allowed: Role[]): void {
   }
 }
 
-/** ผู้ดูแลห้องทำได้เฉพาะห้องที่ตนดูแล · แอดมินทำได้ทุกห้อง */
-export function assertUnitAuthority(actor: Actor, unitId: string): void {
+/** จัดการห้องได้เฉพาะแอดมิน (§10) */
+export function assertUnitAuthority(actor: Actor, _unitId: string): void {
   if (isAdmin(actor)) return;
-  if (actor.roles.includes("ROOM_MANAGER")) {
-    const owns = getDb().roomManagers.some(
-      (m) => m.userId === actor.id && m.unitId === unitId,
-    );
-    if (owns) return;
-    throw new Error("จัดการได้เฉพาะห้องที่คุณดูแล");
-  }
   throw new Error("คุณไม่มีสิทธิ์ทำรายการนี้");
 }
 

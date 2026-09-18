@@ -9,7 +9,7 @@
 
 import type {
   Blackout, Booking, BookingCategory, BookingSpace, BookableUnit, Building,
-  Db, Equipment, Floor, Handoff, Holiday, RoomManagerAssignment, Space, Term, User,
+  Db, Equipment, Floor, Holiday, Space, Term, User,
 } from "../types";
 import { addDays, toIso } from "../time";
 
@@ -43,12 +43,12 @@ export const EQUIPMENT: Equipment[] = [
 ];
 
 const BUILDINGS: Building[] = [
-  { id: "bld-scb4", code: "SCB4", name: "อาคาร SCB4 — คณะวิทยาศาสตร์ข้อมูล", isActive: true },
+  { id: "bld-scb4", code: "SCB4", name: "อาคาร SCB4 — ศูนย์วิจัยวิทยาการข้อมูล", isActive: true },
 ];
 
 const FLOORS: Floor[] = [
-  { id: "fl-1", buildingId: "bld-scb4", floorNo: 1, name: "ชั้น 1 — ห้องเรียนเมเจอร์" },
-  { id: "fl-2", buildingId: "bld-scb4", floorNo: 2, name: "ชั้น 2 — ศูนย์วิจัย DSRC" },
+  { id: "fl-1", buildingId: "bld-scb4", floorNo: 1, name: "ชั้น 1 " },
+  { id: "fl-2", buildingId: "bld-scb4", floorNo: 2, name: "ชั้น 2 " },
 ];
 
 /** พื้นที่จริงที่แบ่งไม่ได้ — หน่วยตรวจการชน */
@@ -65,19 +65,19 @@ type UnitSeed = Omit<BookableUnit, "id"> & { spaces: string[] };
 
 const UNIT_SEEDS: UnitSeed[] = [
   {
-    floorId: "fl-1", code: "SCB4101", name: "ห้องเมเจอร์ Data Science 1", capacity: 60,
+    floorId: "fl-1", code: "SCB4101", name: "ห้องประชุม 1", capacity: 60,
     isBookable: true, openToGuest: true, bookingHoursOverride: null,
-    description: "ห้องเรียนหลักของเมเจอร์วิทยาการข้อมูล จัดโต๊ะแบบ Theatre พร้อมโปรเจกเตอร์และระบบเสียง เหมาะกับการเรียนการสอนและบรรยายรวม",
-    contactNote: "รับกุญแจที่ห้องธุรการชั้น 1 ก่อนเวลาใช้งาน 15 นาที",
-    roomType: "ห้องเรียนเมเจอร์", images: ["a", "b", "c"],
+    description: "ห้องประชุม",
+    contactNote: "ห้องประชุม",
+    roomType: "ห้องประชุม", images: ["a", "b", "c"],
     equipmentIds: ["eq-projector", "eq-mic", "eq-sound", "eq-computer", "eq-aircon", "eq-podium"],
     spaces: ["SCB4101"],
   },
   {
-    floorId: "fl-1", code: "SCB4102", name: "ห้องเมเจอร์ Data Science 2", capacity: 45,
+    floorId: "fl-1", code: "SCB4102", name: "สงวนเฉพาะนักศึกษาสาขาวิทยาการข้อมูล", capacity: 45,
     isBookable: true, openToGuest: true, bookingHoursOverride: null,
-    description: "ห้องปฏิบัติการ/ห้องเรียนของเมเจอร์วิทยาการข้อมูล ติดตั้งเครื่องคอมพิวเตอร์และชุดซอฟต์แวร์วิเคราะห์ข้อมูล เหมาะกับ workshop เชิงปฏิบัติ",
-    contactNote: "แจ้งรายการซอฟต์แวร์ที่ต้องใช้ล่วงหน้าอย่างน้อย 3 วัน",
+    description: "ห้องเมเจอร์สาขาวิทยาการข้อมูล",
+    contactNote: "ห้องเมเจอร์สาขาวิทยาการข้อมูล",
     roomType: "ห้องปฏิบัติการ", images: ["b", "c", "a"],
     equipmentIds: ["eq-projector", "eq-computer", "eq-whiteboard", "eq-aircon", "eq-hdmi"],
     spaces: ["SCB4102"],
@@ -102,9 +102,6 @@ const USERS: User[] = [
   { id: "u-a3", name: "สุนิสา แก้วใจ", email: "sunisa.k@example.ac.th", department: "งานกิจการนักศึกษา", roles: ["USER"], phone: "081-555-6666" },
   { id: "u-a4", name: "ธนกฤต อินทรีย์", email: "thanakrit.i@example.ac.th", department: "สโมสรนักศึกษา", roles: ["USER"], phone: "081-777-8888" },
 ];
-
-/** รุ่นนี้ยังไม่แบ่งบทบาทผู้ดูแลห้อง — เว้นว่างไว้ */
-const ROOM_MANAGERS: RoomManagerAssignment[] = [];
 
 /* แม่แบบรายการจองจำลอง */
 const TEMPLATES: {
@@ -155,7 +152,6 @@ export function createSeed(today: string): Db {
 
   const bookings: Booking[] = [];
   const bookingSpaces: BookingSpace[] = [];
-  const handoffs: Handoff[] = [];
   const approvals: Db["approvals"] = [];
 
   const pushBooking = (b: Booking) => {
@@ -227,12 +223,6 @@ export function createSeed(today: string): Db {
           id: `ap-${id}`, bookingId: id, decidedBy: "u-admin",
           decision: "APPROVED", reason: "", decidedAt: toIso(addDays(dateKey, -5), "10:00"),
         });
-        handoffs.push({
-          id: `hd-${id}`, bookingId: id, roomManagerId: null,
-          notifiedAt: toIso(addDays(dateKey, -5), "10:01"),
-          acknowledgedAt: rng() < 0.6 ? toIso(addDays(dateKey, -4), "08:30") : null,
-          note: "",
-        });
       }
     }
   }
@@ -275,12 +265,6 @@ export function createSeed(today: string): Db {
         id: `ap-${id}`, bookingId: id, decidedBy: "u-admin", decision: "APPROVED",
         reason: "", decidedAt: toIso(addDays(today, -1), "09:00"),
       });
-      handoffs.push({
-        id: `hd-${id}`, bookingId: id, roomManagerId: null,
-        notifiedAt: toIso(addDays(today, -1), "09:01"),
-        acknowledgedAt: toIso(addDays(today, -1), "11:00"),
-        note: "เตรียมห้องและอุปกรณ์เรียบร้อยแล้ว",
-      });
     }
   }
 
@@ -316,7 +300,6 @@ export function createSeed(today: string): Db {
     bookableUnits,
     unitSpaces,
     equipment: EQUIPMENT,
-    roomManagers: ROOM_MANAGERS,
     terms,
     holidays,
     bookingSeries: [],
@@ -324,7 +307,6 @@ export function createSeed(today: string): Db {
     bookingSpaces,
     blackouts,
     approvals,
-    handoffs,
     auditLogs: [],
     notifications: [],
   };

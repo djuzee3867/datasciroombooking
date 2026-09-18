@@ -7,7 +7,7 @@
  *    วันที่จองไม่ได้ต้อง disabled พร้อมบอกเหตุผล (§8.3 · ภาคผนวก ก ข้อ 2)
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { dateSelectable, dayLoad } from "@/lib/conflicts";
 import { holidayOn } from "@/lib/repo";
@@ -30,14 +30,30 @@ export function DateStrip({
   from?: string;
 }) {
   const { db, today } = useStore();
-  const start = from ?? addDays(value, -2);
-  const list = Array.from({ length: days }, (_, i) => addDays(start, i));
+
+  /**
+   * ช่วงวันที่ที่แสดง (anchor = วันซ้ายสุด) เป็น state อิสระจาก value —
+   * กดเลือกวันในแถบจะ "เลือกเฉย ๆ" ไม่ทำให้ทั้งแถบเลื่อนกระโดด (บั๊กเดิม)
+   * แถบจะขยับตามก็ต่อเมื่อวันที่เลือกหลุดออกนอกช่วงที่เห็นเท่านั้น
+   */
+  const [anchor, setAnchor] = useState(() => from ?? addDays(value, -2));
+
+  // ถ้า value ถูกเปลี่ยนจากภายนอกจนหลุดออกนอกช่วงที่เห็น ค่อยเลื่อนช่วงตาม —
+  // ใช้ functional update เพื่อไม่ให้ effect นี้วิ่งตอนกดลูกศรเลื่อนช่วง (anchor เปลี่ยนเอง)
+  useEffect(() => {
+    setAnchor((a) => {
+      const idx = diffDays(a, value);
+      return idx < 0 || idx >= days ? addDays(value, -2) : a;
+    });
+  }, [value, days]);
+
+  const list = Array.from({ length: days }, (_, i) => addDays(anchor, i));
 
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={() => onChange(addDays(value, -1))}
-        aria-label="วันก่อนหน้า"
+        onClick={() => setAnchor((a) => addDays(a, -days))}
+        aria-label="ดูวันก่อนหน้า"
         className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-ink-200 text-ink-500 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
       >
         <IconChevronLeft className="h-4 w-4" />
@@ -53,7 +69,9 @@ export function DateStrip({
               onClick={() => onChange(d)}
               aria-current={active ? "date" : undefined}
               className={cx(
-                "flex w-[4.2rem] shrink-0 flex-col items-center rounded-xl border px-1 py-2 transition",
+                // flex-1 + min-w: จอกว้างปุ่มยืดเต็มความกว้าง (ไม่เหลือช่องว่างท้ายแถบ)
+                // จอแคบคงความกว้างขั้นต่ำแล้วเลื่อนแนวนอนได้
+                "flex min-w-[4.2rem] flex-1 flex-col items-center rounded-xl border px-1 py-2 transition",
                 active
                   ? "border-brand-600 bg-brand-600 text-white shadow-sm shadow-brand-600/25"
                   : "border-ink-100 bg-white text-ink-700 hover:border-brand-300 hover:bg-brand-50",
@@ -78,8 +96,8 @@ export function DateStrip({
       </div>
 
       <button
-        onClick={() => onChange(addDays(value, 1))}
-        aria-label="วันถัดไป"
+        onClick={() => setAnchor((a) => addDays(a, days))}
+        aria-label="ดูวันถัดไป"
         className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-ink-200 text-ink-500 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
       >
         <IconChevronRight className="h-4 w-4" />

@@ -35,21 +35,20 @@ export const COPYRIGHT_YEAR = 2569;
 export function Logo({ onDark = false }: { onDark?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-2.5">
-      <span
+      <img
+        src="/logo.png"
+        alt="DataSci Room Booking"
         className={cx(
-          "grid h-9 w-9 place-items-center rounded-xl text-sm font-bold",
-          onDark ? "bg-white/95 text-brand-700" : "bg-brand-600 text-white",
+          "h-9 w-9 shrink-0 rounded-xl object-contain",
+          onDark ? "bg-white/95 p-0.5" : "",
         )}
-        aria-hidden
-      >
-        DS
-      </span>
+      />
       <span className="leading-tight">
         <span className={cx("block text-sm font-bold", onDark ? "text-white" : "text-ink-900")}>
-          DataSci Room Booking
+           DSRC Room Booking
         </span>
         <span className={cx("block text-[11px]", onDark ? "text-white/70" : "text-ink-400")}>
-          คณะวิทยาศาสตร์สาขาวิทยาการข้อมูล
+          ศูนย์วิจัยวิทยาการข้อมูล
         </span>
       </span>
     </Link>
@@ -72,7 +71,9 @@ export function NavPills({ floating = false }: { floating?: boolean }) {
       className={cx(
         "thin-scroll flex gap-1 overflow-x-auto",
         floating
-          ? "rounded-2xl border border-ink-100 bg-white/95 p-1.5 shadow-[0_18px_40px_-24px_rgba(27,22,38,.55)] backdrop-blur"
+          // w-fit + mx-auto: บนจอกว้างแถบจะกว้างเท่าเมนูแล้วจัดกึ่งกลาง (ไม่มีพื้นหลังเหลือเกินด้านขวา)
+          // ส่วนบนมือถือ max-w-full จะบีบให้พอดีจอแล้วเลื่อนภายในตัวเอง
+          ? "mx-auto w-fit max-w-full rounded-2xl border border-ink-100 bg-white/95 p-1.5 shadow-[0_18px_40px_-24px_rgba(27,22,38,.55)] backdrop-blur"
           : "",
       )}
     >

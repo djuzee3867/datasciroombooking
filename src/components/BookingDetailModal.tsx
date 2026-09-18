@@ -5,7 +5,7 @@
 import type { ReactNode } from "react";
 import { useStore } from "@/lib/store";
 import { CATEGORY_META, STATUS_META } from "@/lib/policy";
-import { approvalOf, handoffOf } from "@/lib/repo";
+import { approvalOf } from "@/lib/repo";
 import type { Booking } from "@/lib/types";
 import { durationLabel, hhmmOf, thaiDateLong } from "@/lib/time";
 import { Badge, Modal, Notice } from "@/components/ui/primitives";
@@ -27,10 +27,6 @@ export function BookingDetailModal({
   const owner = db.users.find((u) => u.id === booking.ownerId);
   const meta = STATUS_META[booking.status];
   const approval = approvalOf(db, booking.id);
-  const handoff = handoffOf(db, booking.id);
-  const manager = handoff?.roomManagerId
-    ? db.users.find((u) => u.id === handoff.roomManagerId)
-    : null;
 
   return (
     <Modal open onClose={onClose} title="รายละเอียดการจอง" wide footer={footer}>
@@ -92,17 +88,6 @@ export function BookingDetailModal({
             <p className="mt-1 text-sm text-ink-800">
               โดย {db.users.find((u) => u.id === approval.decidedBy)?.name ?? approval.decidedBy}
               {approval.reason && ` — ${approval.reason}`}
-            </p>
-          </div>
-        )}
-
-        {handoff && (
-          <div className="rounded-xl border border-ink-100 p-3">
-            <p className="text-xs text-ink-400">การส่งต่อให้ผู้ดูแลห้อง</p>
-            <p className="mt-1 text-sm text-ink-800">
-              {manager ? `ส่งให้ ${manager.name}` : "ยังไม่มีผู้ดูแลห้องที่ผูกกับห้องนี้"}
-              {handoff.acknowledgedAt ? " · รับเรื่องแล้ว" : " · รอรับเรื่อง"}
-              {handoff.note && ` — “${handoff.note}”`}
             </p>
           </div>
         )}

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/icons";
 
 const HIGHEST: Record<string, number> = {
-  SUPER_ADMIN: 5, ADMIN: 4, ROOM_MANAGER: 3, USER: 2, GUEST: 1, VIEWER: 0,
+  SUPER_ADMIN: 5, ADMIN: 4, USER: 2, GUEST: 1, VIEWER: 0,
 };
 
 export function RoleSwitcher({ variant = "light" }: { variant?: "light" | "onDark" }) {

@@ -2,7 +2,7 @@
 
 /**
  * หน้าแอดมิน (plan001.md §10)
- * ADMIN คือผู้อนุมัติหลักของระบบ — อนุมัติแล้วระบบส่งเรื่องต่อให้ผู้ดูแลห้องอัตโนมัติ
+ * ADMIN คือผู้อนุมัติหลักของระบบ
  * SUPER_ADMIN เห็นทุกอย่างของ ADMIN เพิ่มการจัดการสิทธิ์ผู้ใช้
  */
 
@@ -125,7 +125,7 @@ function QueueTab() {
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Stat label="คำขอรออนุมัติ" value={all.length} unit="รายการ" tone="amber" />
         <Stat label="ขอใช้นอกเวลา" value={all.filter((b) => b.outsideHours).length} unit="รายการ" tone="slate" />
         <Stat
@@ -134,19 +134,13 @@ function QueueTab() {
           unit="รายการ"
           tone={all.filter(overdue).length ? "amber" : "slate"}
         />
-        <Stat
-          label="รอผู้ดูแลห้องรับเรื่อง"
-          value={db.handoffs.filter((h) => !h.acknowledgedAt).length}
-          unit="เรื่อง"
-          tone="slate"
-        />
       </div>
 
       <Card>
         <CardHeader
           icon={<IconShield className="h-4.5 w-4.5" />}
           title="คิวอนุมัติรวมทุกห้อง"
-          subtitle="แอดมินเป็นผู้ตัดสินใจ · เมื่ออนุมัติแล้วระบบจะส่งเรื่องให้ผู้ดูแลห้องอัตโนมัติ"
+          subtitle="แอดมินเป็นผู้พิจารณาอนุมัติคำขอทั้งหมด"
           action={
             <div className="flex flex-wrap items-center gap-2">
               <div className="w-44">
@@ -257,7 +251,8 @@ function QueueTab() {
                         </p>
                         <p className="mt-1.5 line-clamp-2 text-xs text-ink-500">{b.purpose}</p>
                       </div>
-                      <div className="flex shrink-0 flex-wrap gap-2">
+                      {/* บนมือถือปุ่มลงมาเต็มบรรทัดใต้เนื้อหา (ไม่บีบข้อความให้แคบ) · จอกว้างค่อยอยู่ข้าง ๆ */}
+                      <div className="flex w-full flex-wrap gap-2 pl-7 sm:w-auto sm:shrink-0 sm:pl-0">
                         <Button variant="secondary" size="sm" onClick={() => setDetail(b)}>รายละเอียด</Button>
                         <Button variant="danger" size="sm" onClick={() => setRejectTarget([b])}>ปฏิเสธ</Button>
                         <Button variant="success" size="sm" onClick={() => approve([b.id])}>อนุมัติ</Button>

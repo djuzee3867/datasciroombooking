@@ -8,7 +8,7 @@
 import { spacesOfUnit } from "./conflicts";
 import { OCCUPYING_STATUSES } from "./policy";
 import type {
-  Blackout, Booking, BookingCategory, BookableUnit, Db, Floor, Handoff, Role, User,
+  Blackout, Booking, BookingCategory, BookableUnit, Db, Floor, Role, User,
 } from "./types";
 import { addDays, dateKeyOf, minutesOfDay, overlaps, toIso } from "./time";
 
@@ -31,7 +31,6 @@ export interface RoomCardView {
   unit: BookableUnit;
   floor: Floor;
   equipment: { id: string; name: string; icon: string }[];
-  managers: User[];
 }
 
 /* ---------------- การอ่านข้อมูลอ้างอิง ---------------- */
@@ -62,18 +61,6 @@ export const equipmentOf = (db: Db, unit: BookableUnit) =>
     .map((id) => db.equipment.find((e) => e.id === id))
     .filter((e): e is NonNullable<typeof e> => Boolean(e));
 
-export const managersOf = (db: Db, unitId: string): User[] =>
-  db.roomManagers
-    .filter((m) => m.unitId === unitId)
-    .map((m) => db.users.find((u) => u.id === m.userId))
-    .filter((u): u is User => Boolean(u));
-
-export const unitsManagedBy = (db: Db, userId: string): BookableUnit[] =>
-  db.roomManagers
-    .filter((m) => m.userId === userId)
-    .map((m) => db.bookableUnits.find((u) => u.id === m.unitId))
-    .filter((u): u is BookableUnit => Boolean(u));
-
 export const holidayOn = (db: Db, dateKey: string) =>
   db.holidays.find((h) => h.date === dateKey) ?? null;
 
@@ -85,7 +72,6 @@ export function roomCard(db: Db, unit: BookableUnit): RoomCardView {
     unit,
     floor: db.floors.find((f) => f.id === unit.floorId)!,
     equipment: equipmentOf(db, unit),
-    managers: managersOf(db, unit.id),
   };
 }
 
@@ -180,29 +166,12 @@ export const pendingQueue = (db: Db) =>
 export const approvalOf = (db: Db, bookingId: string) =>
   db.approvals.filter((a) => a.bookingId === bookingId).at(-1) ?? null;
 
-export const handoffOf = (db: Db, bookingId: string) =>
-  db.handoffs.find((h) => h.bookingId === bookingId) ?? null;
-
-export const handoffsForManager = (db: Db, userId: string): (Handoff & { booking: Booking })[] => {
-  const unitIds = new Set(unitsManagedBy(db, userId).map((u) => u.id));
-  return db.handoffs
-    .map((h) => ({ h, booking: db.bookings.find((b) => b.id === h.bookingId) }))
-    .filter((x): x is { h: Handoff; booking: Booking } => Boolean(x.booking))
-    .filter(({ booking }) => unitIds.has(booking.unitId))
-    .filter(({ booking }) => booking.status === "APPROVED" || booking.status === "IN_USE")
-    .map(({ h, booking }) => ({ ...h, booking }))
-    .sort((a, b) => a.booking.startAt.localeCompare(b.booking.startAt));
-};
-
 /* ---------------- สิทธิ์การเห็นข้อมูล (§11.1) ---------------- */
 
 export function canSeeBookingDetails(db: Db, viewer: User | null, booking: Booking): boolean {
   if (!viewer) return false;
   if (viewer.roles.includes("ADMIN") || viewer.roles.includes("SUPER_ADMIN")) return true;
   if (booking.ownerId === viewer.id) return true;
-  if (viewer.roles.includes("ROOM_MANAGER")) {
-    return unitsManagedBy(db, viewer.id).some((u) => u.id === booking.unitId);
-  }
   return false;
 }
 

@@ -3,7 +3,7 @@
  *
  *   1. ตารางประจำเทอม
  *   2. แก้ไขรายละเอียดห้อง
- *   3. แต่งตั้งผู้ดูแลห้อง และกำหนดสิทธิ์ผู้ใช้
+ *   3. กำหนดสิทธิ์ผู้ใช้
  *   4. เพิ่มอาคารและห้องใหม่
  *   5. ภาคการศึกษา
  *   6. Audit log + ส่งออกรายการจอง
@@ -12,7 +12,7 @@
  */
 
 import {
-  assertRole, assertUnitAuthority, audit, getDb, isAdmin, newId, notify, resolveActor,
+  assertRole, assertUnitAuthority, audit, getDb, newId, notify, resolveActor,
 } from "./mockdb";
 import { findConflicts, spacesOfUnit } from "../conflicts";
 import type {
@@ -252,15 +252,6 @@ export async function updateUnitDetailsAction(actorId: string, unitId: string, p
   const db = getDb();
   const actor = resolveActor(actorId);
   assertUnitAuthority(actor, unitId);
-  const admin = isAdmin(actor);
-
-  if (!admin) {
-    const blocked = (["name", "roomType", "capacity", "isBookable", "openToGuest",
-      "openTime", "closeTime", "unbookableReason"] as const).filter((k) => patch[k] !== undefined);
-    if (blocked.length) {
-      throw new Error("ผู้ดูแลห้องแก้ได้เฉพาะคำอธิบาย ผู้ติดต่อ และอุปกรณ์ประจำห้อง");
-    }
-  }
 
   const unit = db.bookableUnits.find((u) => u.id === unitId);
   if (!unit) throw new Error("ไม่พบห้องนี้");
@@ -305,66 +296,8 @@ export async function updateUnitDetailsAction(actorId: string, unitId: string, p
 }
 
 /* =========================================================================
-   3. แต่งตั้งผู้ดูแลห้อง และกำหนดสิทธิ์ผู้ใช้
+   3. กำหนดสิทธิ์ผู้ใช้
    ========================================================================= */
-
-export interface AssignManagerResult {
-  userId: string;
-  name: string;
-  email: string;
-  invited: boolean;
-}
-
-export async function assignRoomManagerAction(
-  actorId: string, email: string, unitId: string,
-): Promise<AssignManagerResult> {
-  const clean = email.trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) throw new Error("รูปแบบอีเมลไม่ถูกต้อง");
-
-  const db = getDb();
-  const actor = resolveActor(actorId);
-  assertRole(actor, "ADMIN", "SUPER_ADMIN");
-
-  let user = db.users.find((u) => u.email.toLowerCase() === clean);
-  let invited = false;
-  if (!user) {
-    const name = clean.split("@")[0].replace(/[._-]+/g, " ").trim() || clean;
-    user = { id: newId("u"), name, email: clean, department: "", roles: ["USER"], phone: "" };
-    db.users.push(user);
-    invited = true;
-  }
-  if (!user.roles.includes("ROOM_MANAGER")) user.roles = [...user.roles, "ROOM_MANAGER"];
-
-  if (!db.roomManagers.some((m) => m.userId === user!.id && m.unitId === unitId)) {
-    db.roomManagers.push({ userId: user.id, unitId });
-  }
-
-  const unit = db.bookableUnits.find((u) => u.id === unitId);
-  audit(actor.id, "MANAGER_ASSIGNED", "bookableUnit", unitId,
-    `แต่งตั้ง ${user.name} (${clean}) เป็นผู้ดูแลห้อง ${unit?.code ?? ""}`,
-    { room: unit?.code ?? "", roomName: unit?.name ?? "", managerEmail: clean, managerName: user.name, accountCreated: invited });
-  notify(user.id, "MANAGER_ASSIGNED", "คุณได้รับมอบหมายให้ดูแลห้อง",
-    `ห้อง ${unit?.code ?? ""} — ดูรายละเอียดได้ที่หน้าผู้ดูแลห้อง`);
-
-  return { userId: user.id, name: user.name, email: clean, invited };
-}
-
-export async function removeRoomManagerAction(actorId: string, userId: string, unitId: string) {
-  const db = getDb();
-  const actor = resolveActor(actorId);
-  assertRole(actor, "ADMIN", "SUPER_ADMIN");
-
-  db.roomManagers = db.roomManagers.filter((m) => !(m.userId === userId && m.unitId === unitId));
-  const stillManages = db.roomManagers.some((m) => m.userId === userId);
-  const user = db.users.find((u) => u.id === userId);
-  if (user && !stillManages) {
-    user.roles = user.roles.filter((r) => r !== "ROOM_MANAGER");
-  }
-  const unit = db.bookableUnits.find((u) => u.id === unitId);
-  audit(actor.id, "MANAGER_REMOVED", "bookableUnit", unitId,
-    `ถอด ${user?.name ?? ""} ออกจากผู้ดูแลห้อง ${unit?.code ?? ""}`,
-    { room: unit?.code ?? "", managerName: user?.name ?? "", managerEmail: user?.email ?? "", roleRevoked: !stillManages });
-}
 
 export async function setUserRoleAction(actorId: string, userId: string, role: Role, grant: boolean) {
   const db = getDb();
@@ -388,9 +321,6 @@ export async function setUserRoleAction(actorId: string, userId: string, role: R
     if (role === "ADMIN") {
       const admins = db.users.filter((u) => u.roles.includes("ADMIN")).length;
       if (admins <= 1) throw new Error("ต้องเหลือแอดมินอย่างน้อย 1 คนในระบบ");
-    }
-    if (role === "ROOM_MANAGER") {
-      db.roomManagers = db.roomManagers.filter((m) => m.userId !== userId);
     }
     user.roles = user.roles.filter((r) => r !== role);
   }
@@ -681,8 +611,6 @@ export interface BookingExportRow {
   fromSeries: boolean;
   approvedBy: string;
   rejectReason: string;
-  handledBy: string;
-  acknowledged: boolean;
   createdAt: string;
 }
 
@@ -717,9 +645,6 @@ export async function exportBookingsAction(
       const owner = db.users.find((u) => u.id === b.ownerId);
       const approval = db.approvals.filter((a) => a.bookingId === b.id).at(-1) ?? null;
       const decidedBy = approval ? db.users.find((u) => u.id === approval.decidedBy) : undefined;
-      const handoff = db.handoffs.find((h) => h.bookingId === b.id) ?? null;
-      const handledBy = handoff?.roomManagerId
-        ? db.users.find((u) => u.id === handoff.roomManagerId) : undefined;
       const hours = Math.round(
         ((new Date(b.endAt).getTime() - new Date(b.startAt).getTime()) / 3_600_000) * 100,
       ) / 100;
@@ -745,8 +670,6 @@ export async function exportBookingsAction(
         fromSeries: b.seriesId !== null,
         approvedBy: approval?.decision === "APPROVED" ? decidedBy?.name ?? "" : "",
         rejectReason: approval?.decision === "REJECTED" ? approval.reason : "",
-        handledBy: handledBy?.name ?? "",
-        acknowledged: handoff?.acknowledgedAt !== null && handoff?.acknowledgedAt !== undefined,
         createdAt: `${dateKeyOf(b.createdAt)} ${hhmmOf(b.createdAt)}`,
       };
     });

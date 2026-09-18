@@ -75,22 +75,17 @@ export default function HomePage() {
       <PrototypeBanner />
 
       {/* ---------- Hero ---------- */}
-      <div className="relative isolate overflow-hidden bg-brand-800">
-        <div
-          className="absolute inset-0 -z-10 bg-[radial-gradient(80%_120%_at_18%_0%,#8b5cf6_0%,#5b21b6_45%,#2e1065_100%)]"
+      <div className="relative isolate overflow-hidden bg-ink-900">
+        {/* รูปปกศูนย์วิจัยเต็มพื้นหลัง (แสดงสีจริง ไม่เคลือบโทนม่วง) */}
+        <img
+          src="/dsrc.jpg"
+          alt=""
           aria-hidden
+          className="absolute inset-0 -z-10 h-full w-full object-cover object-center"
         />
+        {/* ฉากมืดโทนกลาง (ไม่ใช่สีม่วง) พอให้ตัวอักษรสีขาวอ่านชัด — §11.2 WCAG */}
         <div
-          className="absolute inset-0 -z-10 opacity-[0.16]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)",
-            backgroundSize: "56px 56px",
-          }}
-          aria-hidden
-        />
-        <div
-          className="absolute -right-24 -top-24 -z-10 h-96 w-96 rounded-full bg-fuchsia-400/25 blur-3xl"
+          className="absolute inset-0 -z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60"
           aria-hidden
         />
 
@@ -115,11 +110,13 @@ export default function HomePage() {
       </div>
 
       {/* ---------- เมนูลอย ---------- */}
-      <div className="mx-auto -mt-9 max-w-4xl px-4 sm:px-6">
+      {/* w-full กันไม่ให้กล่องนี้ (ซึ่งเป็น flex item ของ body) หดตาม min-content
+          ของเมนูจนดันหน้าเลื่อนแนวนอนบนมือถือ — เมนูจะเลื่อนภายในตัวเองแทน */}
+      <div className="mx-auto w-full -mt-9 max-w-4xl px-4 sm:px-6">
         <NavPills floating />
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 pb-4 pt-10 sm:px-6">
+      <main className="mx-auto w-full max-w-7xl px-4 pb-4 pt-10 sm:px-6">
         {/* ---------- บล็อกค้นหา ---------- */}
         <Card className="scroll-mt-24">
           <CardHeader
@@ -192,8 +189,7 @@ export default function HomePage() {
           </div>
 
           <p className="mt-2 text-xs leading-relaxed text-ink-400">
-            ต้องการใช้ห้องนอกเวลา {POLICY.openTime}–{POLICY.closeTime} น. ยังทำได้
-            แต่ต้องแนบเอกสารเพิ่มเติมและรอการอนุมัติเป็นกรณีไป
+            ต้องการใช้ห้องนอกเวลา ติดต่อ ศูนย์วิจัยวิทยาการข้อมูล โทร 053-941986
           </p>
         </Card>
 

@@ -15,7 +15,6 @@
 import { useState } from "react";
 import { useStore } from "@/lib/store";
 import { CATEGORY_META, STATUS_META } from "@/lib/policy";
-import { handoffOf } from "@/lib/repo";
 import { downloadCsv } from "@/lib/csv";
 import type { BookingScope } from "@/lib/db/admin-actions";
 import type { Booking } from "@/lib/types";
@@ -71,7 +70,7 @@ export function BookingListCard({
           "รหัส", "วันที่", "เริ่ม", "สิ้นสุด", "ชั่วโมง", "ห้อง", "ชื่อห้อง", "ชั้น",
           "ชื่อเรื่อง", "ประเภท", "สถานะ", "ผู้จอง", "อีเมล", "หน่วยงาน", "จำนวนคน",
           "เบอร์ติดต่อ", "นอกเวลา", "เอกสารแนบ", "มาจากตารางประจำเทอม",
-          "ผู้อนุมัติ", "เหตุผลที่ปฏิเสธ", "ผู้ดูแลห้องที่รับเรื่อง", "รับเรื่องแล้ว", "ยื่นคำขอเมื่อ",
+          "ผู้อนุมัติ", "เหตุผลที่ปฏิเสธ", "ยื่นคำขอเมื่อ",
         ],
         ...data.map((r) => [
           r.id, r.date, r.startTime, r.endTime, r.hours, r.room, r.roomName, r.floor,
@@ -79,7 +78,7 @@ export function BookingListCard({
           STATUS_META[r.status as keyof typeof STATUS_META]?.label ?? r.status,
           r.owner, r.ownerEmail, r.department, r.attendees, r.contactPhone,
           r.outsideHours, r.attachmentName, r.fromSeries,
-          r.approvedBy, r.rejectReason, r.handledBy, r.acknowledged, r.createdAt,
+          r.approvedBy, r.rejectReason, r.createdAt,
         ]),
       ]);
     } catch (err) {
@@ -149,13 +148,12 @@ export function BookingListCard({
                 <th className="py-2 font-medium">ห้อง</th>
                 <th className="py-2 font-medium">ชื่อเรื่อง</th>
                 <th className="py-2 font-medium">ผู้จอง</th>
-                <th className="py-2 font-medium">{upcoming ? "ผู้ดูแลรับเรื่อง" : "ผลการใช้งาน"}</th>
+                <th className="py-2 font-medium">สถานะ</th>
                 <th className="py-2" />
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-100">
               {shown.map((b) => {
-                const h = handoffOf(db, b.id);
                 const unit = db.bookableUnits.find((u) => u.id === b.unitId);
                 const meta = STATUS_META[b.status];
                 return (
@@ -177,19 +175,7 @@ export function BookingListCard({
                       {db.users.find((u) => u.id === b.ownerId)?.name}
                     </td>
                     <td className="py-2.5">
-                      {upcoming ? (
-                        h?.acknowledgedAt ? (
-                          <Badge className="bg-emerald-50 text-emerald-700 ring-emerald-200" dot="bg-emerald-500">
-                            รับแล้ว
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-amber-50 text-amber-800 ring-amber-200" dot="bg-amber-500">
-                            รอรับ
-                          </Badge>
-                        )
-                      ) : (
-                        <Badge className={meta.className} dot={meta.dot}>{meta.label}</Badge>
-                      )}
+                      <Badge className={meta.className} dot={meta.dot}>{meta.label}</Badge>
                     </td>
                     <td className="py-2.5 text-right">
                       <div className="flex justify-end gap-1">

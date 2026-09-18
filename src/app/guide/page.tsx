@@ -27,11 +27,7 @@ const STEPS = [
   },
   {
     title: "รอแอดมินอนุมัติ",
-    body: "คำขอจะกันเวลาไว้ให้ทันทีเพื่อกันคนอื่นจองซ้อน · แอดมินพิจารณาแล้วจะแจ้งผลกลับ หากถูกปฏิเสธ ระบบจะปล่อยเวลาคืนอัตโนมัติ",
-  },
-  {
-    title: "ผู้ดูแลห้องรับเรื่องและเตรียมห้อง",
-    body: "เมื่ออนุมัติแล้ว ระบบส่งเรื่องต่อให้ผู้ดูแลห้องโดยอัตโนมัติ · ผู้ดูแลจะยืนยันและอาจฝากหมายเหตุ เช่น จุดรับกุญแจ กลับมาถึงคุณ",
+    body: "คำขอจะกันเวลาไว้ให้ทันทีเพื่อกันคนอื่นจองซ้อน · แอดมินพิจารณาแล้วจะแจ้งผลกลับ หากถูกปฏิเสธ ระบบจะปล่อยเวลาคืนอัตโนมัติ เมื่ออนุมัติแล้วถือว่าการจองสมบูรณ์",
   },
 ];
 
@@ -65,28 +61,26 @@ const FAQ = [
     a: "ผู้ที่ไม่ล็อกอินเห็นเฉพาะช่วงเวลา ชื่อเรื่องสาธารณะ และประเภทการใช้งานเท่านั้น · ชื่อผู้จอง เบอร์โทร วัตถุประสงค์ จำนวนผู้เข้าร่วม และเอกสารแนบ เป็นข้อมูลภายใน",
   },
   {
-    q: "ใครเป็นคนอนุมัติ ผู้ดูแลห้องอนุมัติได้ไหม",
-    a: "แอดมิน (ฝ่ายอาคาร) เป็นผู้อนุมัติทั้งหมด · ผู้ดูแลห้องมีหน้าที่รับเรื่องที่อนุมัติแล้วไปเตรียมห้อง และแจ้งปัญหากลับแอดมิน แต่ไม่มีสิทธิ์ตัดสินคำขอ",
+    q: "ใครเป็นคนอนุมัติคำขอ",
+    a: "แอดมิน (ฝ่ายอาคาร) เป็นผู้พิจารณาอนุมัติคำขอทั้งหมด",
   },
 ];
 
 const PERMISSIONS: { action: string; cells: (boolean | string)[] }[] = [
-  { action: "ดูตารางห้อง (เวลา + ชื่อเรื่อง)", cells: [true, true, true, true, true, true] },
-  { action: "ดูรายละเอียดผู้จอง", cells: [false, false, "เฉพาะของตน", "เฉพาะห้องตน", true, true] },
-  { action: "สร้างคำขอจอง", cells: [false, "เฉพาะห้องสาธารณะ", true, true, true, true] },
-  { action: "แก้ไข/ยกเลิกคำขอของตัวเอง", cells: [false, true, true, true, true, true] },
-  { action: "แก้ไข/ยกเลิกคำขอของคนอื่น", cells: [false, false, false, false, true, true] },
-  { action: "อนุมัติ / ปฏิเสธคำขอ", cells: [false, false, false, false, true, true] },
-  { action: "รับเรื่อง / เตรียมห้อง", cells: [false, false, false, "เฉพาะห้องตน", true, true] },
-  { action: "บล็อกเวลาห้อง", cells: [false, false, false, "เฉพาะห้องตน", true, true] },
-  { action: "เพิ่ม/แก้ไข/ปิดห้อง", cells: [false, false, false, "บางฟิลด์", true, true] },
-  { action: "ตั้งค่าเทอม / วันหยุด / นโยบาย", cells: [false, false, false, false, true, true] },
-  { action: "แต่งตั้งผู้ดูแลห้อง", cells: [false, false, false, false, true, true] },
-  { action: "กำหนด role ผู้ใช้", cells: [false, false, false, false, false, true] },
-  { action: "ดู Audit log", cells: [false, false, false, "เฉพาะห้องตน", true, true] },
+  { action: "ดูตารางห้อง (เวลา + ชื่อเรื่อง)", cells: [true, true, true, true, true] },
+  { action: "ดูรายละเอียดผู้จอง", cells: [false, false, "เฉพาะของตน", true, true] },
+  { action: "สร้างคำขอจอง", cells: [false, "เฉพาะห้องสาธารณะ", true, true, true] },
+  { action: "แก้ไข/ยกเลิกคำขอของตัวเอง", cells: [false, true, true, true, true] },
+  { action: "แก้ไข/ยกเลิกคำขอของคนอื่น", cells: [false, false, false, true, true] },
+  { action: "อนุมัติ / ปฏิเสธคำขอ", cells: [false, false, false, true, true] },
+  { action: "บล็อกเวลาห้อง", cells: [false, false, false, true, true] },
+  { action: "เพิ่ม/แก้ไข/ปิดห้อง", cells: [false, false, false, true, true] },
+  { action: "ตั้งค่าเทอม / วันหยุด / นโยบาย", cells: [false, false, false, true, true] },
+  { action: "กำหนด role ผู้ใช้", cells: [false, false, false, false, true] },
+  { action: "ดู Audit log", cells: [false, false, false, true, true] },
 ];
 
-const ROLE_COLS = ["VIEWER", "GUEST", "USER", "ROOM_MANAGER", "ADMIN", "SUPER_ADMIN"] as const;
+const ROLE_COLS = ["VIEWER", "GUEST", "USER", "ADMIN", "SUPER_ADMIN"] as const;
 
 export default function GuidePage() {
   const [open, setOpen] = useState<number | null>(0);
@@ -158,7 +152,7 @@ export default function GuidePage() {
           <CardHeader
             icon={<IconShield className="h-4.5 w-4.5" />}
             title="สิทธิ์ของแต่ละบทบาท"
-            subtitle="ผู้ใช้ 1 คนมีได้หลายบทบาท · ผู้ดูแลห้องต้องผูกกับรายการห้องเสมอ"
+            subtitle="ผู้ใช้ 1 คนมีได้หลายบทบาท"
           />
           <div className="thin-scroll overflow-x-auto">
             <table className="w-full min-w-[46rem] text-sm">

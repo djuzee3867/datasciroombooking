@@ -11,7 +11,7 @@ import { useStore } from "@/lib/store";
 import { POLICY } from "@/lib/policy";
 import { bookingHoursOf, displayHours, unitStatusAt } from "@/lib/conflicts";
 import {
-  canSeeBookingDetails, equipmentOf, getUnitByCode, listUnits, managersOf,
+  canSeeBookingDetails, equipmentOf, getUnitByCode, listUnits,
   scheduleForDay, scheduleForRange,
 } from "@/lib/repo";
 import {
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/primitives";
 import {
   EquipmentIcon, IconBan, IconChevronLeft, IconChevronRight, IconClock,
-  IconMail, IconPhone, IconShield, IconUsers,
+  IconShield, IconUsers,
 } from "@/components/ui/icons";
 import { RoomGallery } from "@/components/RoomPhoto";
 import { DayColumnsGrid } from "@/components/schedule/DayColumnsGrid";
@@ -63,7 +63,6 @@ export function RoomDetail({ code }: { code: string }) {
 
   const floor = db.floors.find((f) => f.id === unit.floorId)!;
   const equipment = equipmentOf(db, unit);
-  const managers = managersOf(db, unit.id);
   const live = unitStatusAt(db, unit.id, nowIso);
   const dayEntries = scheduleForDay(db, unit.id, selectedDay);
   const siblings = listUnits(db, { floorId: unit.floorId }).filter((u) => u.id !== unit.id);
@@ -273,7 +272,7 @@ export function RoomDetail({ code }: { code: string }) {
               <CardHeader title="กติกาการจองห้องนี้" icon={<IconShield className="h-4.5 w-4.5" />} />
               <dl className="space-y-3 text-sm">
                 {[
-                  ["การอนุมัติ", "แอดมินอนุมัติ → ส่งต่อผู้ดูแลห้อง"],
+                  ["การอนุมัติ", "แอดมินเป็นผู้พิจารณาอนุมัติ"],
                   ["เวลาที่จองได้", `${hours.open} – ${hours.close} น.`],
                   ["จองล่วงหน้า", `อย่างน้อย ${POLICY.leadTimeDays} วัน · ไกลสุด ${POLICY.bookingHorizonDays} วัน`],
                   ["ความยาวต่อครั้ง", `ขั้นต่ำ ${POLICY.minDurationMinutes} นาที · ไม่จำกัดสูงสุด`],
@@ -291,35 +290,6 @@ export function RoomDetail({ code }: { code: string }) {
                 <IconClock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 {unit.contactNote}
               </p>
-            </Card>
-
-            <Card>
-              <CardHeader title="ผู้ดูแลห้อง" />
-              {managers.length === 0 ? (
-                <p className="text-sm text-ink-400">ยังไม่ได้แต่งตั้งผู้ดูแลห้องนี้</p>
-              ) : (
-                <ul className="space-y-3">
-                  {managers.map((m) => (
-                    <li key={m.id} className="flex items-start gap-3">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-100 text-sm font-bold text-brand-700">
-                        {m.name.trim().charAt(0)}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="font-medium text-ink-900">{m.name}</p>
-                        <p className="text-xs text-ink-400">{m.department}</p>
-                        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-500">
-                          <span className="flex items-center gap-1">
-                            <IconPhone className="h-3.5 w-3.5" /> {m.phone}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <IconMail className="h-3.5 w-3.5" /> {m.email}
-                          </span>
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </Card>
 
             <Card>

@@ -170,9 +170,9 @@ export function RoomCard({
           <button
             onClick={() => setExpanded((v) => !v)}
             aria-expanded={expanded}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-100 hover:text-brand-800"
           >
-            {expanded ? "ย่อ" : `ดูอีก ${EXPAND_DAYS - 1} วันข้างหน้า`}
+            {expanded ? "ย่อตาราง" : `ดูอีก ${EXPAND_DAYS - 1} วันข้างหน้า`}
             <IconChevronDown className={cx("h-3.5 w-3.5 transition", expanded && "rotate-180")} />
           </button>
         </div>

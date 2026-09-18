@@ -55,7 +55,7 @@ export async function createBookingAction(
   try {
     const db = getDb();
     const actor = resolveActor(actorId);
-    assertRole(actor, "USER", "GUEST", "ROOM_MANAGER", "ADMIN", "SUPER_ADMIN");
+    assertRole(actor, "USER", "GUEST", "ADMIN", "SUPER_ADMIN");
     const actorIsAdmin = isAdmin(actor);
 
     const unit = db.bookableUnits.find((u) => u.id === input.unitId);
@@ -165,29 +165,10 @@ export async function approveBookingsAction(actorId: string, bookingIds: string[
       decision: "APPROVED", reason: "", decidedAt: new Date().toISOString(),
     });
 
-    const managerId = db.roomManagers.find((m) => m.unitId === b.unitId)?.userId ?? null;
-    const existing = db.handoffs.find((h) => h.bookingId === id);
-    if (existing) {
-      existing.roomManagerId = managerId;
-    } else {
-      db.handoffs.push({
-        id: newId("hd"), bookingId: id, roomManagerId: managerId,
-        notifiedAt: new Date().toISOString(), acknowledgedAt: null, note: "",
-      });
-    }
-
     const unit = db.bookableUnits.find((u) => u.id === b.unitId);
-    audit(actor.id, "BOOKING_APPROVED", "booking", id, `อนุมัติคำขอ ${unit?.code ?? ""}`, {
-      ...bookingDigest(db, id),
-      handedTo: managerId,
-      handedToName: managerId
-        ? db.users.find((u) => u.id === managerId)?.name ?? ""
-        : "ยังไม่มีผู้ดูแลห้อง",
-    });
+    audit(actor.id, "BOOKING_APPROVED", "booking", id, `อนุมัติคำขอ ${unit?.code ?? ""}`,
+      bookingDigest(db, id));
     notify(b.ownerId, "APPROVED", "คำขอจองได้รับการอนุมัติแล้ว", `${unit?.name ?? ""} · ${b.publicTitle}`);
-    if (managerId) {
-      notify(managerId, "HANDOFF", "มีเรื่องส่งต่อให้เตรียมห้อง", `${unit?.name ?? ""} · ${b.publicTitle}`);
-    }
   }
 }
 
@@ -254,7 +235,6 @@ export async function cancelBookingAction(
     b.note = `${b.note ? b.note + " · " : ""}เหตุผลการยกเลิก: ${reason.trim()}`;
   }
   db.bookingSpaces = db.bookingSpaces.filter((bs) => bs.bookingId !== bookingId);
-  db.handoffs = db.handoffs.filter((h) => h.bookingId !== bookingId);
 
   const unit = db.bookableUnits.find((u) => u.id === b.unitId);
   audit(actor.id, "BOOKING_CANCELLED", "booking", bookingId, `ยกเลิกการจอง ${unit?.code ?? ""}`,
@@ -263,38 +243,6 @@ export async function cancelBookingAction(
   if (byAdmin) {
     notify(b.ownerId, "CANCELLED", "การจองถูกยกเลิกโดยแอดมิน", `${unit?.name ?? ""} · เหตุผล: ${reason.trim()}`);
   }
-}
-
-/* ------------------------------------------------- ผู้ดูแลห้องรับเรื่อง */
-
-export async function acknowledgeHandoffAction(actorId: string, handoffId: string, note: string) {
-  const db = getDb();
-  const actor = resolveActor(actorId);
-  assertRole(actor, "ROOM_MANAGER", "ADMIN", "SUPER_ADMIN");
-
-  const h = db.handoffs.find((x) => x.id === handoffId);
-  if (!h) throw new Error("ไม่พบเรื่องที่ส่งต่อ");
-  h.acknowledgedAt = new Date().toISOString();
-  h.note = note.trim();
-  if (!h.roomManagerId) h.roomManagerId = actor.id;
-
-  const b = db.bookings.find((x) => x.id === h.bookingId);
-  audit(actor.id, "HANDOFF_ACK", "handoff", handoffId, "ผู้ดูแลห้องรับเรื่องและเตรียมห้อง",
-    { ...bookingDigest(db, h.bookingId), note: note.trim() || null });
-  if (b) {
-    notify(b.ownerId, "HANDOFF_ACK", "ผู้ดูแลห้องรับเรื่องแล้ว",
-      note.trim() || "ห้องพร้อมใช้งานตามเวลาที่จอง");
-  }
-}
-
-export async function reportIssueAction(actorId: string, bookingId: string, text: string) {
-  const db = getDb();
-  const actor = resolveActor(actorId);
-  assertRole(actor, "ROOM_MANAGER", "ADMIN", "SUPER_ADMIN");
-  const summary = text.trim() || "ผู้ดูแลห้องแจ้งปัญหาเกี่ยวกับห้อง";
-  audit(actor.id, "ISSUE_REPORTED", "booking", bookingId, summary,
-    { ...bookingDigest(db, bookingId), issue: summary });
-  notifyAdmins("ISSUE", "ผู้ดูแลห้องแจ้งปัญหา", summary);
 }
 
 /* ------------------------------------------------------- บล็อกเวลาห้อง */
@@ -306,11 +254,7 @@ export async function createBlackoutAction(
   try {
     const db = getDb();
     const actor = resolveActor(actorId);
-    assertRole(actor, "ROOM_MANAGER", "ADMIN", "SUPER_ADMIN");
-    if (actor.roles.includes("ROOM_MANAGER") && !isAdmin(actor)) {
-      const own = db.roomManagers.some((m) => m.userId === actor.id && m.unitId === unitId);
-      if (!own) throw new Error("บล็อกเวลาได้เฉพาะห้องที่คุณดูแล");
-    }
+    assertRole(actor, "ADMIN", "SUPER_ADMIN");
 
     if (findConflicts(db, unitId, startAt, endAt).length) {
       return { ok: false, message: "ช่วงเวลานี้มีรายการจองอยู่แล้ว กรุณาประสานแอดมินเพื่อยกเลิกก่อน" };
@@ -333,7 +277,7 @@ export async function createBlackoutAction(
 export async function removeBlackoutAction(actorId: string, blackoutId: string) {
   const db = getDb();
   const actor = resolveActor(actorId);
-  assertRole(actor, "ROOM_MANAGER", "ADMIN", "SUPER_ADMIN");
+  assertRole(actor, "ADMIN", "SUPER_ADMIN");
   db.blackouts = db.blackouts.filter((b) => b.id !== blackoutId);
   audit(actor.id, "BLACKOUT_REMOVED", "blackout", blackoutId, "ยกเลิกการบล็อกเวลา");
 }

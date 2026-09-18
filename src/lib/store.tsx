@@ -16,18 +16,18 @@ import {
   createContext, useCallback, useContext, useMemo, useSyncExternalStore,
 } from "react";
 import {
-  acknowledgeHandoffAction, approveBookingsAction, cancelBookingAction,
+  approveBookingsAction, cancelBookingAction,
   createBlackoutAction, createBookingAction, fetchDb, rejectBookingsAction,
-  removeBlackoutAction, reportIssueAction, resetDemoDataAction, updateUnitAction,
+  removeBlackoutAction, resetDemoDataAction, updateUnitAction,
   type CreateBookingPayload, type CreateBookingResult,
 } from "./db/actions";
 import {
-  assignRoomManagerAction, createBuildingAction, createSeriesAction, createTermAction,
+  createBuildingAction, createSeriesAction, createTermAction,
   createUnitAction, deleteSeriesAction, deleteTermAction, fetchAuditLogsAction,
-  previewSeriesAction, removeRoomManagerAction, setUserRoleAction,
+  previewSeriesAction, setUserRoleAction,
   updateTermAction, updateUnitDetailsAction,
   exportBookingsAction,
-  type AssignManagerResult, type AuditFilter, type AuditRow,
+  type AuditFilter, type AuditRow,
   type BookingExportFilter, type BookingExportRow,
   type CreateBuildingInput, type CreateSeriesResult, type CreateUnitInput,
   type SeriesInput, type SeriesOccurrence, type TermInput, type UnitPatch,
@@ -140,8 +140,6 @@ export interface StoreActions {
   approveBookings: (bookingIds: string[]) => Promise<void>;
   rejectBookings: (bookingIds: string[], reason: string) => Promise<void>;
   cancelBooking: (bookingId: string, byAdmin: boolean, reason: string) => Promise<void>;
-  acknowledgeHandoff: (handoffId: string, note: string) => Promise<void>;
-  reportIssue: (bookingId: string, text: string) => Promise<void>;
   createBlackout: (
     unitId: string, startAt: string, endAt: string, reason: string,
   ) => Promise<{ ok: boolean; message?: string }>;
@@ -156,10 +154,8 @@ export interface StoreActions {
   createSeries: (input: SeriesInput) => Promise<CreateSeriesResult>;
   deleteSeries: (seriesId: string) => Promise<void>;
 
-  /* ---- จัดการห้อง ผู้ดูแล และสิทธิ์ ---- */
+  /* ---- จัดการห้อง และสิทธิ์ ---- */
   updateUnitDetails: (unitId: string, patch: UnitPatch) => Promise<void>;
-  assignRoomManager: (email: string, unitId: string) => Promise<AssignManagerResult>;
-  removeRoomManager: (userId: string, unitId: string) => Promise<void>;
   setUserRole: (userId: string, role: Role, grant: boolean) => Promise<void>;
   createBuilding: (input: CreateBuildingInput) => Promise<{ buildingId: string }>;
   createUnit: (input: CreateUnitInput) => Promise<{ unitId: string }>;
@@ -235,10 +231,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         run(() => rejectBookingsAction(needActor(), ids, reason)),
       cancelBooking: (id, byAdmin, reason) =>
         run(() => cancelBookingAction(needActor(), id, byAdmin, reason)),
-      acknowledgeHandoff: (handoffId, note) =>
-        run(() => acknowledgeHandoffAction(needActor(), handoffId, note)),
-      reportIssue: (bookingId, text) =>
-        run(() => reportIssueAction(needActor(), bookingId, text)),
       createBlackout: (unitId, startAt, endAt, reason) =>
         run(() => createBlackoutAction(needActor(), unitId, startAt, endAt, reason)),
       removeBlackout: (blackoutId) =>
@@ -252,10 +244,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       updateUnitDetails: (unitId, patch) =>
         run(() => updateUnitDetailsAction(needActor(), unitId, patch)),
-      assignRoomManager: (email, unitId) =>
-        run(() => assignRoomManagerAction(needActor(), email, unitId)),
-      removeRoomManager: (userId, unitId) =>
-        run(() => removeRoomManagerAction(needActor(), userId, unitId)),
       setUserRole: (userId, role, grant) =>
         run(() => setUserRoleAction(needActor(), userId, role, grant)),
       createBuilding: (input) => run(() => createBuildingAction(needActor(), input)),

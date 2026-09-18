@@ -53,6 +53,13 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--color-ink-200) transparent;
 }
+/* กันไม่ให้เนื้อหากว้าง (เช่น ตาราง min-w-[..] หรือแถบเวลา) ดัน min-content
+   ของ flex/grid item ที่ครอบอยู่ จนทั้งหน้าเลื่อนแนวนอนบนมือถือ/แท็บเล็ต —
+   กล่องเลื่อนแบบบล็อกจะยึดความกว้างที่มีแล้วเลื่อนเนื้อหาภายในตัวเองแทน (§11.2)
+   ยกเว้นแถบแบบ flex (เมนู/แท็บ/ตัวเลือกวัน) ที่ต้องกว้างตามเนื้อหา ไม่งั้นจะยุบแคบ */
+.thin-scroll:not(.flex) {
+  contain: inline-size;
+}
 .thin-scroll::-webkit-scrollbar {
   height: 8px;
   width: 8px;

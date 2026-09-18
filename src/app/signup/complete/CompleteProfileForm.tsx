@@ -62,7 +62,7 @@ export function CompleteProfileForm() {
       <div className="space-y-4">
         <Notice tone="info">
           บัญชี <strong>{auth.user.email}</strong> ยืนยันตัวตนแล้ว
-          เหลือเบอร์ติดต่อกับหน่วยงานที่ผู้ดูแลห้องต้องใช้ตอนประสานงาน
+          เหลือเบอร์ติดต่อกับหน่วยงานที่แอดมินต้องใช้ตอนประสานงาน
         </Notice>
 
         <div className="grid gap-4 sm:grid-cols-2">

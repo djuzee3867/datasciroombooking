@@ -11,7 +11,6 @@ export type Role =
   | "VIEWER"
   | "GUEST"
   | "USER"
-  | "ROOM_MANAGER"
   | "ADMIN"
   | "SUPER_ADMIN";
 
@@ -93,11 +92,6 @@ export interface Equipment {
   id: string;
   name: string;
   icon: string;
-}
-
-export interface RoomManagerAssignment {
-  userId: string;
-  unitId: string;
 }
 
 export interface Term {
@@ -198,16 +192,6 @@ export interface Approval {
   decidedAt: string;
 }
 
-/** เรื่องที่แอดมินอนุมัติแล้วส่งต่อให้ผู้ดูแลห้อง (§7 ข้อ 3) */
-export interface Handoff {
-  id: string;
-  bookingId: string;
-  roomManagerId: string | null;
-  notifiedAt: string;
-  acknowledgedAt: string | null;
-  note: string;
-}
-
 export interface AuditLog {
   id: string;
   actorId: string;
@@ -241,7 +225,6 @@ export interface Db {
   bookableUnits: BookableUnit[];
   unitSpaces: UnitSpace[];
   equipment: Equipment[];
-  roomManagers: RoomManagerAssignment[];
   terms: Term[];
   holidays: Holiday[];
   bookingSeries: BookingSeries[];
@@ -249,7 +232,6 @@ export interface Db {
   bookingSpaces: BookingSpace[];
   blackouts: Blackout[];
   approvals: Approval[];
-  handoffs: Handoff[];
   auditLogs: AuditLog[];
   notifications: Notification[];
 }

@@ -9,16 +9,16 @@ import { useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { CATEGORY_META, POLICY, STATUS_META } from "@/lib/policy";
 import {
-  approvalOf, bookingsOfUser, getUnit, handoffOf, managersOf,
+  approvalOf, bookingsOfUser, getUnit,
 } from "@/lib/repo";
 import type { Booking } from "@/lib/types";
 import { durationLabel, hhmmOf, thaiDateLong } from "@/lib/time";
 import { PageShell, PageHeading } from "@/components/layout/SiteShell";
 import {
-  Badge, Button, ButtonLink, Card, EmptyState, Modal, Notice, Tabs, Textarea, cx,
+  Badge, Button, ButtonLink, Card, EmptyState, Modal, Notice, Tabs, Textarea,
 } from "@/components/ui/primitives";
 import {
-  IconBan, IconCheck, IconClock, IconDownload, IconDoc, IconUsers, IconWarn,
+  IconBan, IconClock, IconDownload, IconDoc, IconUsers, IconWarn,
 } from "@/components/ui/icons";
 
 type TabKey = "PENDING" | "APPROVED" | "PAST" | "CANCELLED";
@@ -111,8 +111,6 @@ export default function MyBookingsPage() {
               const unit = getUnit(db, b.unitId)!;
               const meta = STATUS_META[b.status];
               const approval = approvalOf(db, b.id);
-              const handoff = handoffOf(db, b.id);
-              const managers = managersOf(db, b.unitId);
 
               return (
                 <Card key={b.id} className="p-4 sm:p-5">
@@ -172,28 +170,6 @@ export default function MyBookingsPage() {
                     </p>
                   )}
 
-                  {handoff && (
-                    <div
-                      className={cx(
-                        "mt-4 flex items-start gap-2 rounded-xl px-3 py-2.5 text-xs leading-relaxed",
-                        handoff.acknowledgedAt ? "bg-emerald-50 text-emerald-900" : "bg-ink-50 text-ink-600",
-                      )}
-                    >
-                      {handoff.acknowledgedAt ? (
-                        <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      ) : (
-                        <IconClock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      )}
-                      <span>
-                        {handoff.acknowledgedAt
-                          ? <>ผู้ดูแลห้องรับเรื่องแล้ว{handoff.note && <> — “{handoff.note}”</>}</>
-                          : <>ส่งเรื่องให้ผู้ดูแลห้องแล้ว รอการยืนยันเตรียมห้อง</>}
-                        {managers.length > 0 && (
-                          <span className="text-ink-400"> · ผู้ดูแล: {managers.map((m) => m.name).join(", ")}</span>
-                        )}
-                      </span>
-                    </div>
-                  )}
 
                   {(b.purpose || b.attachmentName || b.note) && (
                     <dl className="mt-4 grid gap-2 border-t border-ink-100 pt-3 text-xs sm:grid-cols-3">

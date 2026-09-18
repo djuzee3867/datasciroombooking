@@ -196,7 +196,7 @@ export function BookFlow() {
               <strong> กันเวลาไว้ให้แล้ว</strong> เพื่อไม่ให้ผู้อื่นจองซ้อนระหว่างรอ
               <br />
               แอดมินจะพิจารณาภายใน {POLICY.pendingExpiryHours} ชั่วโมง
-              เมื่ออนุมัติแล้วระบบจะส่งเรื่องให้ผู้ดูแลห้องเตรียมห้องต่อไป
+              เมื่ออนุมัติแล้วถือว่าการจองสมบูรณ์
             </p>
 
             <dl className="mx-auto mt-6 max-w-sm space-y-2 rounded-xl border border-ink-100 bg-ink-50/60 p-4 text-left text-sm">
@@ -538,7 +538,7 @@ export function BookFlow() {
                     label="วัตถุประสงค์การใช้งาน"
                     required
                     error={err("purpose")}
-                    hint="ข้อมูลภายใน เห็นได้เฉพาะผู้จอง ผู้ดูแลห้อง และแอดมิน"
+                    hint="ข้อมูลภายใน เห็นได้เฉพาะผู้จอง และแอดมิน"
                     className="sm:col-span-2"
                   >
                     <Textarea
@@ -595,7 +595,7 @@ export function BookFlow() {
                     </p>
                   </Field>
 
-                  <Field label="หมายเหตุถึงผู้ดูแลห้อง" className="sm:col-span-2">
+                  <Field label="หมายเหตุถึงผู้อนุมัติ" className="sm:col-span-2">
                     <Textarea
                       value={note}
                       onChange={(e) => setNote(e.target.value)}

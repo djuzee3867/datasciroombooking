@@ -194,7 +194,7 @@ function AttachmentViewer({
                 {typeLabel(mime)}
                 {size !== null && ` · ${fileSizeLabel(size)}`}
                 <span className="hidden sm:inline">
-                  {" · เอกสารภายใน เห็นได้เฉพาะผู้จอง ผู้ดูแลห้อง และแอดมิน"}
+                  {" · เอกสารภายใน เห็นได้เฉพาะผู้จอง และแอดมิน"}
                 </span>
               </p>
             </div>
